@@ -1,3 +1,16 @@
+environment 'production'
+
+# Set the SSL certificate and key paths
+ssl_cert = 'config/server.crt'
+ssl_key = 'config/server.key'
+
+if File.exist?(ssl_cert) && File.exist?(ssl_key)
+  ssl_bind '0.0.0.0', '443', cert: ssl_cert, key: ssl_key
+  puts "Successfully started the Puma server with SSL enabled"
+else
+  puts "SSL certificate (#{ssl_cert}) or key (#{ssl_key}) not found. Please provide valid paths."
+end
+
 # Puma can serve each request in a thread from an internal thread pool.
 # The `threads` method setting takes two numbers: a minimum and maximum.
 # Any libraries that use thread pools should be configured to match
