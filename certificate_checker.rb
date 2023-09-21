@@ -6,21 +6,22 @@ class CertificateChecker
   def self.verify_certificate
     ca_cert_path = File.join(__dir__, 'config', 'ca.crt')
 
-    # Create a custom SSL context with your CA certificate
-    ssl_context = OpenSSL::SSL::SSLContext.new
-    ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
-    ssl_context.cert_store = OpenSSL::X509::Store.new
-    ssl_context.cert_store.add_file(ca_cert_path)
-
+    # Disable hostname verification for localhost
     api_url = 'https://localhost:443/certificate_info/expiration_date'
 
     begin
       uri = URI.parse(api_url)
 
+      # Create a custom SSL context with your CA certificate
+      ssl_context = OpenSSL::SSL::SSLContext.new
+      ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      ssl_context.cert_store = OpenSSL::X509::Store.new
+      ssl_context.cert_store.add_file(ca_cert_path)
+
       # Create a new Net::HTTP object and set the custom SSL context
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      http.verify_mode = uri.host == 'localhost' ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
       http.cert_store = ssl_context.cert_store
 
       request = Net::HTTP::Get.new(uri.request_uri)
